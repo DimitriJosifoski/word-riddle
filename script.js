@@ -1,6 +1,5 @@
-// script.js
-
-const wordList = ["APPLE", "BANJO", "CHAIR", "DANCE", "EAGLE", "FLUTE", "GRAPE", "HOUSE", "IGLOO", "JOKER", "KITES", "LEMON", "MANGO", "NURSE", "OASIS", "PEARL", "QUICK", "ROBOT", "SNAKE", "TIGER"];
+// Create a bank of words to choose from for each game
+const wordList = ["APPLE", "BANJO", "CHAIR", "DANCE", "EAGLE", "FLUTE", "GRAPE", "HOUSE", "IGLOO", "JOKER", "KITES", "LEMON", "MANGO", "NURSE", "OASIS", "PEARL", "QUICK", "ROBOT", "SNAKE", "TIGER", "HARPY", "BOWEL", "SNIPE", "BAGEL", "SUGAR", "LATTE", "BLACK", "WHITE", "BROWN", "GREEN", "MOVIE", "NIGHT", "PHONE", "CHESS", "GEARS", "EVENT", "ZEALS", "ZELDA", "INTEL", "LIGHT", "RAPID","EXCEL", "WORDS", "CHARGE", "CALEB", "SERVE", "GRIND", "MAMMA", "PZAZZ", "EPOXY", "MUMMY", "CACOA", "WOOER", "IONIC", "COYLY", "ZESTY", "NYMPH", "REBUS", "BLOKE", "KNOLL"];
 let randomWord = "";
 let attempts = 0;
 
@@ -27,19 +26,21 @@ const checkWord = (userWord) => {
 
   if (userWord === randomWord) {
     updateMessage("Congratulations! You've guessed the word!");
-  } else {
-    let result = "";
+  } 
+  else {
+    attempts++;
+    
     for (let i = 0; i < userWord.length; i++) {
+      const inputBox = document.getElementById(`text_input${attempts}_${i+1}`)
       if (userWord[i] === randomWord[i]) {
-        result += "🟩"; // Correct position
+        inputBox.style.backgroundColor = "green";
       } else if (randomWord.includes(userWord[i])) {
-        result += "🟨"; // Correct letter, wrong position
+        inputBox.style.backgroundColor = "yellow";
       } else {
-        result += "⬜"; // Incorrect letter
+        inputBox.style.backgroundColor = "gray";
       }
     }
-    updateMessage(result);
-    attempts++;
+    
     if (attempts === 5 && userWord !== randomWord) {
       updateMessage(`You've lost! The word was: ${randomWord}`);
     }
@@ -56,10 +57,54 @@ const getUserWord = (attemptId) => {
   return word;
 };
 
+const submit = (id) => {
+  const userInput = getUserWord(id);
+  checkWord(userInput);
+}
+
 // Set up event listeners for each submit button
 for (let i = 1; i <= 5; i++) {
   document.getElementById(`submit${i}`).addEventListener("click", () => {
-    const userInput = getUserWord(i);
-    checkWord(userInput, i);
+    submit(i);
   });
 }
+
+let submitId = 1;
+window.addEventListener("keydown", (e) => {
+  if(e.key === "Enter") {
+    submit(submitId);
+    submitId++;
+    const nextInput = document.getElementById(`text_input${submitId}_${1}`);
+    nextInput.focus(); // Move to the next row's first box to enter the next word
+  }
+});
+
+// Function to add auto-focus behavior to all input boxes
+const addAutoFocus = () => {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    for (let i = 1; i <= 5; i++) {
+      const currentInput = document.getElementById(`text_input${attempt}_${i}`);
+      currentInput.addEventListener("input", (event) => {
+        if (event.target.value.length === 1) { // Check if a letter was entered
+          const nextInput = document.getElementById(`text_input${attempt}_${i + 1}`);
+          if (nextInput) {
+            nextInput.focus(); // Move to the next input box
+          }
+        }
+      });
+
+      // Add backspace behavior to go to previous box if empty
+      currentInput.addEventListener("keydown", (event) => {
+        if (event.key === "Backspace" && event.target.value === "") {
+          const prevInput = document.getElementById(`text_input${attempt}_${i - 1}`);
+          if (prevInput) {
+            prevInput.focus(); // Move to the previous input box
+          }
+        }
+      });
+    }
+  }
+};
+
+// Call addAutoFocus to set up the auto-move functionality
+addAutoFocus();
